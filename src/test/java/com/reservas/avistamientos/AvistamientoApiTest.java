@@ -11,6 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
 
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -85,5 +88,42 @@ class AvistamientoApiTest {
                         .content(objectMapper.writeValueAsString(peticion)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.detalles.fechaAvistamiento").exists());
+    }
+
+    @Test
+    void listaTodosLosAvistamientos() throws Exception {
+        mockMvc.perform(get("/api/avistamientos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(5))));
+    }
+
+    @Test
+    void filtraPorEspecieIgnorandoMayusculas() throws Exception {
+        mockMvc.perform(get("/api/avistamientos").param("especie", "jaguar"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].especie").value("Jaguar"));
+    }
+
+    @Test
+    void filtraPorZonaYRangoDeFechas() throws Exception {
+        mockMvc.perform(get("/api/avistamientos")
+                        .param("zona", "Sector Norte")
+                        .param("desde", "2026-09-01T00:00:00")
+                        .param("hasta", "2026-10-01T00:00:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].zona").value("Sector Norte"));
+    }
+
+    @Test
+    void devuelve204CuandoElFiltroNoEncuentraNada() throws Exception {
+        mockMvc.perform(get("/api/avistamientos").param("especie", "especie-inexistente"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void entregaElResumenPorEspecie() throws Exception {
+        mockMvc.perform(get("/api/avistamientos/resumen/especies"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.Jaguar").value(greaterThanOrEqualTo(2)));
     }
 }
