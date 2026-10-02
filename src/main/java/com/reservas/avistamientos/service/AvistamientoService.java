@@ -2,6 +2,7 @@ package com.reservas.avistamientos.service;
 
 import com.reservas.avistamientos.dto.AvistamientoRequest;
 import com.reservas.avistamientos.dto.AvistamientoResponse;
+import com.reservas.avistamientos.exception.RecursoNoEncontradoException;
 import com.reservas.avistamientos.model.Avistamiento;
 import com.reservas.avistamientos.repository.AvistamientoRepository;
 import org.slf4j.Logger;
@@ -65,6 +66,13 @@ public class AvistamientoService {
                 especie, zona, desde, hasta, resultado.size());
 
         return resultado;
+    }
+
+    public AvistamientoResponse obtenerPorId(Long id) {
+        return repositorio.findById(id)
+                .map(AvistamientoResponse::desde)
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "No existe un avistamiento con id " + id));
     }
 
     public Map<String, Long> resumenPorEspecie() {

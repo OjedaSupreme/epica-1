@@ -115,6 +115,13 @@ class AvistamientoApiTest {
     }
 
     @Test
+    void devuelve404CuandoElIdNoExiste() throws Exception {
+        mockMvc.perform(get("/api/avistamientos/999999"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.estado").value(404));
+    }
+
+    @Test
     void devuelve204CuandoElFiltroNoEncuentraNada() throws Exception {
         mockMvc.perform(get("/api/avistamientos").param("especie", "especie-inexistente"))
                 .andExpect(status().isNoContent());
