@@ -8,6 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 @Service
 public class AvistamientoService {
 
@@ -37,6 +42,37 @@ public class AvistamientoService {
                 guardado.getId(), guardado.getEspecie(), guardado.getZona());
 
         return AvistamientoResponse.desde(guardado);
+    }
+
+    public List<AvistamientoResponse> listarTodos() {
+        return repositorio.buscarConFiltros(null, null, null, null)
+                .stream()
+                .map(AvistamientoResponse::desde)
+                .toList();
+    }
+
+    public List<AvistamientoResponse> buscar(String especie,
+                                             String zona,
+                                             LocalDateTime desde,
+                                             LocalDateTime hasta) {
+        List<AvistamientoResponse> resultado = repositorio
+                .buscarConFiltros(normalizar(especie), normalizar(zona), desde, hasta)
+                .stream()
+                .map(AvistamientoResponse::desde)
+                .toList();
+
+        log.debug("Busqueda especie={} zona={} desde={} hasta={} -> {} resultados",
+                especie, zona, desde, hasta, resultado.size());
+
+        return resultado;
+    }
+
+    public Map<String, Long> resumenPorEspecie() {
+        Map<String, Long> resumen = new LinkedHashMap<>();
+        for (Object[] fila : repositorio.contarPorEspecie()) {
+            resumen.put((String) fila[0], (Long) fila[1]);
+        }
+        return resumen;
     }
 
     private String normalizar(String valor) {
