@@ -579,39 +579,39 @@ Las capturas están en la carpeta `imges/`.
 
 **Figura 1.** Historial completo. `GET /api/avistamientos` responde **200** con el arreglo de avistamientos, del más reciente al más antiguo.
 
-![GET 200 con la lista de avistamientos](imges/imagen%201.png)
+![GET 200 con la lista de avistamientos](imges/imagen-1.png)
 
 **Figura 2.** Consulta por id. `GET /api/avistamientos/5` responde **200** con la danta de montaña.
 
-![GET 200 del avistamiento 5](imges/imagen%202.png)
+![GET 200 del avistamiento 5](imges/imagen-2.png)
 
 **Figura 3.** Filtro por especie. `GET /api/avistamientos?especie=jaguar` responde **200** con los dos jaguares, aunque la búsqueda vaya en minúsculas.
 
-![GET 200 filtrado por jaguar](imges/imagen%203.png)
+![GET 200 filtrado por jaguar](imges/imagen-3.png)
 
 **Figura 4.** Resumen por especie. `GET /api/avistamientos/resumen/especies` responde **200**. Jaguar aparece dos veces; el resto, una.
 
-![GET 200 del resumen por especie](imges/imagen%204.png)
+![GET 200 del resumen por especie](imges/imagen-4.png)
 
 **Figura 5.** Id inexistente. `GET /api/avistamientos/9` responde **404** con el mensaje `No existe un avistamiento con id 9`.
 
-![GET 404 de un avistamiento inexistente](imges/imagen%205.png)
+![GET 404 de un avistamiento inexistente](imges/imagen-5.png)
 
 **Figura 6.** Otra toma del historial completo, el mismo `GET /api/avistamientos` con **200**.
 
-![Segunda captura del GET de la lista](imges/imgen%206.png)
+![Segunda captura del GET de la lista](imges/imagen-6.png)
 
 **Figura 7.** `POST /api/avistamientos` rechazado. La respuesta es **400 Bad Request**.
 
-![POST 400 al registrar](imges/imagen%207.png)
+![POST 400 al registrar](imges/imagen-7.png)
 
 **Figura 8.** Petición a la consola H2 (`POST /h2-console`). Responde **200** con el HTML de la página de acceso.
 
-![Respuesta HTML de la consola H2](imges/imagen%208.png)
+![Respuesta HTML de la consola H2](imges/imagen-8.png)
 
 **Figura 9.** Ramas en GitHub: `main`, `dev` y las tres `feat/os/avistamiento_*`.
 
-![Selector de ramas del repositorio](imges/imagen%209.png)
+![Selector de ramas del repositorio](imges/imagen-9.png)
 
 ---
 
