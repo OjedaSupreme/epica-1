@@ -260,18 +260,6 @@ Los dos parámetros genéricos son `<tipo de la entidad, tipo de su clave primar
 
 `@Repository` es opcional al extender `JpaRepository`, pero se deja para explicitar el rol de la capa.
 
-#### Métodos derivados del nombre (*query methods*)
-
-Spring Data **analiza el nombre del método** y construye el JPQL automáticamente.
-
-| Método | JPQL generado | Para qué |
-|---|---|---|
-| `findByEspecieContainingIgnoreCase(String)` | `where lower(especie) like lower(concat('%', :especie, '%'))` | Búsqueda parcial e insensible a mayúsculas. Útil porque los nombres comunes se escriben de forma inconsistente en campo (`"jaguar"`, `"Jaguar"`, `"JAGUAR"`). |
-| `findByZonaContainingIgnoreCase(String)` | Ídem sobre `zona` | Misma técnica aplicada al sector de la reserva. |
-| `findByFechaAvistamientoBetween(desde, hasta)` | `where fechaAvistamiento between :desde and :hasta` | Rango de fechas inclusivo. |
-
-> Estos tres métodos documentan las consultas derivadas y quedan disponibles para uso directo; el servicio usa en su lugar `buscarConFiltros`, que los cubre a los tres a la vez.
-
 #### `buscarConFiltros(...)` — la consulta central
 
 ```java
@@ -341,8 +329,7 @@ Conviene ser preciso al respecto: JPA siempre necesita una transacción para esc
 | Método | Historia | Qué hace |
 |---|---|---|
 | `registrar(AvistamientoRequest)` | **HU1** | Normaliza los textos, construye la entidad y la persiste con `save()`, que ejecuta el `INSERT` y retorna la instancia gestionada con el `id` generado. Devuelve el DTO ya con `id` y con `fechaRegistro` fijada por `@PrePersist`. Deja traza en el log a nivel `INFO`. |
-| `listarTodos()` | **HU2** | Devuelve todos los avistamientos. **Reutiliza `buscarConFiltros(null, null, null, null)` en lugar de `findAll()`** a propósito: así el orden de salida (fecha de observación descendente) es el mismo que en las búsquedas filtradas, en vez del orden arbitrario que devolvería `findAll()`. |
-| `buscar(especie, zona, desde, hasta)` | HU2 ampliada | Consulta combinada. Los cuatro parámetros son opcionales; los nulos se descartan dentro del JPQL. Un único método cubre todas las combinaciones de filtros de la épica. Traza a nivel `DEBUG` con el número de resultados. |
+| `buscar(especie, zona, desde, hasta)` | **HU2** | Consulta combinada. Los cuatro parámetros son opcionales; los nulos se descartan dentro del JPQL. Sin filtros devuelve el historial completo, en el mismo orden que una búsqueda filtrada. Traza a nivel `DEBUG` con el número de resultados. |
 | `obtenerPorId(Long)` | soporte | `findById` devuelve `Optional`; aquí se transforma en `RecursoNoEncontradoException` cuando no hay dato, para que el manejador global lo traduzca a un HTTP 404 coherente. |
 | `resumenPorEspecie()` | soporte | Convierte el `List<Object[]>` crudo del repositorio en un mapa (especie → total). Usa **`LinkedHashMap` y no `HashMap`** para preservar el orden por frecuencia que impone el `order by` de la consulta; un `HashMap` lo perdería. |
 
@@ -413,7 +400,7 @@ Este método **cubre HU2 y los filtros de la descripción en un solo endpoint**:
 
 - `@RequestParam(required = false)` hace opcional cada filtro; sin valor llega `null`.
 - `@DateTimeFormat(iso = ISO.DATE_TIME)` instruye a Spring para convertir `2026-09-01T00:00:00` en `LocalDateTime`. **Sin esta anotación la conversión falla** y la petición responde 400.
-- La bandera `sinFiltros` elige entre `listarTodos()` (HU2 pura) y `buscar(...)`. Funcionalmente ambas rutas coinciden —`buscar` con cuatro nulos es equivalente—, pero la separación mantiene explícito en el código cuál es la consulta de la historia de usuario.
+- `listar` siempre delega en `buscar`. Si los cuatro parámetros llegan `null`, el JPQL no aplica filtro y devuelve el historial completo.
 - Si no hay resultados devuelve **204 No Content** en lugar de `200 []`: indica al cliente "la consulta fue válida y no hay nada", distinto de un error.
 
 #### `obtenerPorId(...)` — `GET /api/avistamientos/{id}`
@@ -585,6 +572,46 @@ curl "http://localhost:8080/api/avistamientos?especie=jaguar&zona=Sector%20Norte
   "mensaje": "No existe un avistamiento con id 9999"
 }
 ```
+
+### Evidencias visuales
+
+Las capturas están en la carpeta `imges/`.
+
+**Figura 1.** Historial completo. `GET /api/avistamientos` responde **200** con el arreglo de avistamientos, del más reciente al más antiguo.
+
+![GET 200 con la lista de avistamientos](imges/imagen%201.png)
+
+**Figura 2.** Consulta por id. `GET /api/avistamientos/5` responde **200** con la danta de montaña.
+
+![GET 200 del avistamiento 5](imges/imagen%202.png)
+
+**Figura 3.** Filtro por especie. `GET /api/avistamientos?especie=jaguar` responde **200** con los dos jaguares, aunque la búsqueda vaya en minúsculas.
+
+![GET 200 filtrado por jaguar](imges/imagen%203.png)
+
+**Figura 4.** Resumen por especie. `GET /api/avistamientos/resumen/especies` responde **200**. Jaguar aparece dos veces; el resto, una.
+
+![GET 200 del resumen por especie](imges/imagen%204.png)
+
+**Figura 5.** Id inexistente. `GET /api/avistamientos/9` responde **404** con el mensaje `No existe un avistamiento con id 9`.
+
+![GET 404 de un avistamiento inexistente](imges/imagen%205.png)
+
+**Figura 6.** Otra toma del historial completo, el mismo `GET /api/avistamientos` con **200**.
+
+![Segunda captura del GET de la lista](imges/imgen%206.png)
+
+**Figura 7.** `POST /api/avistamientos` rechazado. La respuesta es **400 Bad Request**.
+
+![POST 400 al registrar](imges/imagen%207.png)
+
+**Figura 8.** Petición a la consola H2 (`POST /h2-console`). Responde **200** con el HTML de la página de acceso.
+
+![Respuesta HTML de la consola H2](imges/imagen%208.png)
+
+**Figura 9.** Ramas en GitHub: `main`, `dev` y las tres `feat/os/avistamiento_*`.
+
+![Selector de ramas del repositorio](imges/imagen%209.png)
 
 ---
 

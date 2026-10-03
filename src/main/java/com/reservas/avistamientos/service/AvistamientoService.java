@@ -45,13 +45,6 @@ public class AvistamientoService {
         return AvistamientoResponse.desde(guardado);
     }
 
-    public List<AvistamientoResponse> listarTodos() {
-        return repositorio.buscarConFiltros(null, null, null, null)
-                .stream()
-                .map(AvistamientoResponse::desde)
-                .toList();
-    }
-
     public List<AvistamientoResponse> buscar(String especie,
                                              String zona,
                                              LocalDateTime desde,

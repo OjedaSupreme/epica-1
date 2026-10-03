@@ -53,11 +53,7 @@ public class AvistamientoController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime hasta) {
 
-        boolean sinFiltros = especie == null && zona == null && desde == null && hasta == null;
-
-        List<AvistamientoResponse> resultado = sinFiltros
-                ? servicio.listarTodos()
-                : servicio.buscar(especie, zona, desde, hasta);
+        List<AvistamientoResponse> resultado = servicio.buscar(especie, zona, desde, hasta);
 
         return resultado.isEmpty()
                 ? ResponseEntity.status(HttpStatus.NO_CONTENT).build()

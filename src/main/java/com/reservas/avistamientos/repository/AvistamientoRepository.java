@@ -12,12 +12,6 @@ import java.util.List;
 @Repository
 public interface AvistamientoRepository extends JpaRepository<Avistamiento, Long> {
 
-    List<Avistamiento> findByEspecieContainingIgnoreCase(String especie);
-
-    List<Avistamiento> findByZonaContainingIgnoreCase(String zona);
-
-    List<Avistamiento> findByFechaAvistamientoBetween(LocalDateTime desde, LocalDateTime hasta);
-
     @Query("""
             select a from Avistamiento a
             where (:especie is null or lower(a.especie) like lower(concat('%', :especie, '%')))
