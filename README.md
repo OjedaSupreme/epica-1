@@ -1,8 +1,8 @@
-Jesus Gerardo Ojeda Martinez
-Daniel Levi Encinas Estrada
-Derek Enrique Siqueiros Heredia
-Kevin Garcia Meza
-Susana Gpe Gallegos Corrales
+1. Jesus Gerardo Ojeda Martinez
+2. Daniel Levi Encinas Estrada
+3. Derek Enrique Siqueiros Heredia
+4. Kevin Garcia Meza
+5. Susana Gpe Gallegos Corrales
 # Épica 1 — Sistema de Registro y Consulta de Avistamientos de Fauna Silvestre
 
 Plataforma REST para que investigadores y guardabosques **registren** avistamientos de animales en reservas naturales y **consulten** el historial filtrado por especie, zona o fecha.
